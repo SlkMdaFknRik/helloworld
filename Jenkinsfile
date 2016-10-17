@@ -1,10 +1,34 @@
 # Jenkinsfile
-# Build and test a Maven project
+# Build and test a node project
 
 node {
-  git url: 'https://github.com/SlkMdaFknRik/helloworld/myapp'
-  def mvnHome = tool 'M3'
-  sh "${mvnHome}/bin/mvn -B -Dmaven.test.failure.ignore verify"
-  step([$class: 'JUnitResultArchiver', testResults:
-'**/target/foobar/TEST-*.xml'])
+    // uncomment these 2 lines and edit the name 'node-4.4.5' according to what you choose in configuration
+    // def nodeHome = tool name: 'node-4.4.5', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+    // env.PATH = "${nodeHome}/bin:${env.PATH}"
+
+    git url: 'https://github.com/SlkMdaFknRik/helloworld/myapp'
+  
+    stage 'check environment'
+    sh "node -v"
+    sh "npm -v"
+    sh "bower -v"
+    sh "gulp -v"
+
+    stage 'checkout'
+    checkout scm
+
+    stage 'npm install'
+    sh "npm install"
+
+    stage 'clean'
+    sh "./mvnw clean"
+
+    stage 'backend tests'
+    sh "./mvnw test"
+
+    stage 'frontend tests'
+    sh "gulp test"
+
+    stage 'packaging'
+    sh "./mvnw package -Pprod -DskipTests"
 }
